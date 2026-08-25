@@ -4,6 +4,8 @@ A set of 10 Ruby gems for running AI agents inside Rails applications under expl
 
 This repo is the umbrella for the `wild-*` constellation. Each gem is its own independently developed and released repository under `jeremylongshore/wild-*`; this repo contains the ecosystem-level documentation, the dependency map, and the per-repo status table.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U5S225PTME)
+
 ## What's in the ecosystem
 
 | Repo | Archetype | What it does |
