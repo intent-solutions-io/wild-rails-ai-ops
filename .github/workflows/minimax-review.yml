@@ -114,13 +114,15 @@ jobs:
             diff describes a new MCP tool, ask which side of the read/write
             boundary it sits on and which gate decides it. (2) planned adoption
             written as shipped: wild-hook-ops is extracted but NOT yet consumed
-            (both *-mcp gems still carry ad hoc HookEmitter classes) and
+            (neither *-mcp gem declares it and neither carries hook emitter code
+            at all, only a design sketch in its own docs) and
             wild-skillops-registry is v0.1.0 and standalone with no consumers.
             Both are v2 targets; deleting the Known v1 to v2 adoption gaps section
             without evidence the gap closed is a defect. (3) dependency map drift:
             there is exactly ONE hard runtime dependency between Layer 1 and Layer
-            2, wild-admin-tools-mcp to wild-capability-gate, declared in
-            admin-tools Gemfile. The README ASCII map, the ARCHITECTURE map and
+            2, wild-admin-tools-mcp to wild-capability-gate, declared in the
+            admin-tools gemspec (ARCHITECTURE.md says Gemfile, which pins only the
+            source). The README ASCII map, the ARCHITECTURE map and
             that sentence must agree; a new arrow in one map only, or a new hard
             dependency with no gem named as declaring it, is a finding. (4) status
             table drift: the workspace wild/CLAUDE.md section 11 table is the
@@ -145,18 +147,23 @@ jobs:
             and any workflow YAML. INVARIANTS that must never regress: read only
             means read only; every privileged action reaches ONE gate with no
             bypass and no per-tool exemption; an unaudited decision does not
-            exist; redaction is the default and richer collection is opt in; the
+            exist as a reviewable event, though a failed audit write is
+            deliberately non fatal and does not deny; redaction is the default and
+            richer collection is opt in; the
             mirror never leads the source of truth; historical records are
             superseded by dated correction, never silently rewritten; the count
-            and membership of the ten gems agree everywhere. FAIL CLOSED here
-            means: when the capability gate cannot reach its policy source,
-            evaluate a rule, or write its decision to the audit sink, it DENIES
-            the call rather than allowing and warning; telemetry that cannot run
-            its redactor DROPS the event rather than emitting raw. Prose in this
-            repo describing a degraded mode as permissive (falls back to allowing,
-            skips the gate when, logs and continues) is a top severity finding even
-            though the code lives elsewhere, because this repo is where an
-            integrator reads the contract. NEVER HAND EDITED, flag and redirect:
+            and membership of the ten gems agree everywhere. FAIL CLOSED here has
+            three legs and they differ: when the gate cannot evaluate a rule it
+            DENIES with reason evaluation_error; when it cannot reach its policy
+            source it raises at construction so no half configured gate answers a
+            call, which is fail closed at startup and not a per call denial; and a
+            failed audit write is deliberately non fatal and does NOT flip an allow
+            into a deny, so do not flag prose that says so. Telemetry that cannot
+            run its privacy filter DROPS the event rather than emitting raw. Prose
+            describing the GATE DECISION path as permissive (falls back to
+            allowing, skips the gate when, logs and continues) is a top severity
+            finding even though the code lives elsewhere, because this repo is
+            where an integrator reads the contract. NEVER HAND EDITED, flag and redirect:
             .beads/issues.jsonl and .beads/interactions.jsonl are exports from the
             local Dolt DB (change them via bd), .beads/hooks/* are installed by bd
             init, and the fenced BEGIN/END BEADS INTEGRATION blocks in CLAUDE.md
@@ -214,14 +221,16 @@ jobs:
             safety property (read only, gated, redacted, audited) is real only if
             the gem repo implements it, and this umbrella asserting it is not
             evidence; EXTRACTED is not ADOPTED, so wild-hook-ops shipping as a gem
-            does not mean the two *-mcp gems consume it (they still carry ad hoc
-            HookEmitter classes) and wild-skillops-registry existing at v0.1.0
+            does not mean the two *-mcp gems consume it (neither declares it, and
+            neither carries hook emitter code at all: the emitter exists only as a
+            design sketch in each gem own docs) and
+            wild-skillops-registry existing at v0.1.0
             does not mean anything registers with it; DOCUMENTED is not
             IMPLEMENTED and a merged markdown file is not a released gem; a
             version or count written in this README is not proof it matches the
             workspace wild/CLAUDE.md section 11 source of truth, and this README
             is the MIRROR not the origin; an arrow drawn in an ASCII diagram is not
-            proof a Gemfile declares that dependency; PLANNED for v2 is not
+            proof a gemspec declares that dependency; PLANNED for v2 is not
             available now; and green CI proves only the checks that ran. AUDIT, DO
             NOT AUTHOR: treat the PR body as the author evidence manifest, check
             whether each cited artifact, command, repo link or audit document
