@@ -11,6 +11,6 @@ operating guidance for `wild-rails-ai-ops`.
 
 ## Filing convention
 
-Documents follow the Intent Solutions Document Filing System v4.4: a stable
-sequence number, document class, type, descriptive slug, and date. Durable work
-items live in Beads rather than in Markdown task lists.
+Documents follow the internal Intent Solutions Document Filing System v4.4: a
+stable sequence number, document class, type, descriptive slug, and date.
+Durable work items live in Beads rather than in Markdown task lists.

@@ -14,17 +14,18 @@ review, focused runtime reproductions, Git/GitHub inspection
 
 **Tracking:** Bead `wild-rails-ai-ops-8l5` and children `.1` through `.11`
 
-**Verdict:** Core libraries are substantially hardened; product adoption and
-release remain blocked.
+**Verdict:** The executable core-library gates pass and several prior security
+defects are fixed; product adoption and release remain blocked.
 
 ## 1. System in five minutes
 
-Wild is no longer an estate of ten independently developed gems. On 2026-05-29,
-a seven-seat architecture council rejected that topology and selected one Rails
-engine gem, `jeremylongshore/wild`, containing ten `Wild::*` namespaces. The
-workspace records both the decision and namespace mapping at
-`wild/CLAUDE.md:109-141`, and explicitly says that only `wild/wild/` accepts code
-commits at `wild/CLAUDE.md:145-161`.
+Wild is no longer an estate of ten independently developed gems. A 2026-05-28
+truth audit preceded a separate 2026-05-29 seven-seat architecture council,
+which rejected that topology and selected one Rails engine gem,
+`jeremylongshore/wild`, containing ten `Wild::*` namespaces. Workspace
+`wild/CLAUDE.md` records the topology decision in section 10 and namespace
+mapping in section 11 (`:109-141`); section 12 explicitly says that only
+`wild/wild/` accepts code commits (`:145-161`).
 
 The active codebase is therefore:
 
@@ -59,12 +60,12 @@ that no Ruby code exists centrally (`CLAUDE.md:7-22`, `REVIEW.md:7-17`). That is
 not a harmless stale paragraph: it is the public integration contract and the
 automated reviewer law.
 
-### Immediate operating rule
+### Audit release recommendation
 
-Do not release `wild`, enable Skillops, or resume implementation in the ten
-legacy repositories. Repair the P0/P1 findings centrally, complete the
-adoption path, pass the five-minute gate, then redirect and archive the legacy
-repositories.
+The audit recommends that the owner not release `wild`, enable Skillops, or
+resume implementation in the ten legacy repositories. Repair the P0/P1
+findings centrally, complete the adoption path, pass the five-minute gate,
+then redirect and archive the legacy repositories.
 
 ## 2. Executive assessment
 
@@ -84,11 +85,16 @@ behavior was correctly migrated.
 
 ### 2.2 Current health
 
+Scores are the audit team's judgment across implementation correctness, test
+evidence, security boundaries, adoption readiness, release controls,
+documentation truth, and operational hygiene. They are directional and are not
+an external certification.
+
 | Dimension | Score | Assessment |
 |---|---:|---|
-| Core implementation | 82/100 | Cohesive namespaces, strong parameterization, validation, redaction, and focused tests |
+| Core implementation | 82/100 | Cohesive namespaces, parameterized queries, validation, redaction, and focused tests |
 | Test execution | 90/100 | Large deterministic suite and clean static/security gates; important integration gaps remain |
-| Security design | 72/100 | Strong default boundaries in several paths, but audit liveness and error-disclosure policy are unresolved |
+| Security design | 72/100 | Multiple fail-closed boundaries, but audit liveness and error-disclosure policy are unresolved |
 | Product adoption | 32/100 | Generator, transports, prompts, real engine route, and stopwatch journey are unfinished |
 | Release engineering | 28/100 | Artifact is overbroad and workflow can release from the wrong ref without readiness proof |
 | Documentation truth | 25/100 | Umbrella and several status/test documents materially contradict current topology and code |
@@ -105,7 +111,7 @@ release.
 ### 2.4 Positive baseline
 
 The result is not a condemnation of the codebase. The central implementation
-has several unusually strong properties:
+has several implemented safeguards worth preserving:
 
 - Introspection uses authentication, model and column allowlists,
   parameterized lookups, result filtering, row ceilings, and time ceilings.
@@ -119,9 +125,9 @@ has several unusually strong properties:
   CodeQL through a fan-in check.
 - The central README is candid about what does and does not work.
 
-Those strengths justify finishing the product rather than restarting it.
+Those safeguards justify finishing the product rather than restarting it.
 
-## 3. Verified baseline
+## 3. Executed baseline
 
 The following commands were run against clean central source at commit
 `e47ee2c` on 2026-09-14.
@@ -143,7 +149,7 @@ six failures because hard-coded dates aged beyond the 90-day retention window;
 the central suite replaced those fixtures. Exact legacy totals appear in the
 repository assessments below. All ten legacy RuboCop runs that could resolve
 dependencies were clean. Gitleaks found no findings in the five Group B
-histories. These results are evidence of a strong unit baseline, not proof of
+histories. These results are evidence of a broad unit baseline, not proof of
 end-to-end compatibility.
 
 ## 4. Severity-ranked findings
@@ -304,7 +310,7 @@ the intended product.
 
 **Required fix:** use an allowlist for runtime files, licenses, and intentionally
 published documentation; unpack and assert the manifest in CI; generate SBOM
-and provenance from the exact verified artifact.
+and provenance from the exact release artifact under review.
 
 **Tracking:** `wild-rails-ai-ops-8l5.6`.
 
@@ -488,7 +494,7 @@ hardening program:
 | `lib/wild/skillops/` | Skill registry/lifecycle | Correctly disabled; lifecycle/version model is not safe to enable |
 | `spec/dummy/` | Rails integration fixture | Useful, but masks default-adapter boot failure |
 | `tests/` and `TEST_AUDIT.md` | Test policy and traceability | Materially stale and internally inconsistent |
-| `.github/workflows/` | CI, release, dependency/review automation | CI strong; release and advisory automation need correction |
+| `.github/workflows/` | CI, release, dependency/review automation | CI gates are broad; release and advisory automation need correction |
 
 ### 5.2 Configuration split
 
@@ -544,7 +550,11 @@ central `query_guard.rb:25` and `schema_inspector.rb:39`. Raw tool errors and
 pre-recorder audit gaps also remain centrally.
 
 **Disposition:** redirect to `Wild::Introspection`, migrate only surviving
-defects, then archive. Legacy issues #20-22 must be closed or mapped centrally.
+defects, then archive. Legacy issues
+[#20](https://github.com/jeremylongshore/wild-rails-safe-introspection-mcp/issues/20),
+[#21](https://github.com/jeremylongshore/wild-rails-safe-introspection-mcp/issues/21),
+and [#22](https://github.com/jeremylongshore/wild-rails-safe-introspection-mcp/issues/22)
+must be closed or mapped centrally.
 
 ### 6.2 `wild-admin-tools-mcp` — 30/100 legacy, 80/100 migrated
 
@@ -559,7 +569,10 @@ returned (`server/response_formatter.rb:20`), fresh hosts require unused
 adapters, and mutation occurs before durable audit persistence.
 
 **Disposition:** redirect to `Wild::AdminTools`, close obsolete legacy issues
-#10-12, then archive.
+[#10](https://github.com/jeremylongshore/wild-admin-tools-mcp/issues/10),
+[#11](https://github.com/jeremylongshore/wild-admin-tools-mcp/issues/11), and
+[#12](https://github.com/jeremylongshore/wild-admin-tools-mcp/issues/12), then
+archive.
 
 ### 6.3 `wild-capability-gate` — 40/100 legacy, 70/100 migrated
 
@@ -570,8 +583,9 @@ keys still exclude changing prerequisite context
 that behavior (`wild/spec/wild/capability_gate/session_spec.rb:103`). Audit
 context is not secret-sanitized, and JSONL append has no cross-process lock.
 
-**Disposition:** redirect to `Wild::CapabilityGate`; close legacy #11 only with
-the narrow fix evidence, while keeping broader central audit work open.
+**Disposition:** redirect to `Wild::CapabilityGate`; close legacy
+[#11](https://github.com/jeremylongshore/wild-capability-gate/issues/11) only
+with the narrow fix evidence, while keeping broader central audit work open.
 
 ### 6.4 `wild-session-telemetry` — 30/100 legacy, 70/100 migrated
 
@@ -581,8 +595,9 @@ normal stores still do not enforce declared count/byte/age limits. Timestamp
 validation is weak, and the missing `source_id` makes the exported stream
 unreadable by Analysis.
 
-**Disposition:** redirect to `Wild::Telemetry::Collector`; preserve legacy #14
-and CLI intent centrally; archive only after the canonical telemetry contract
+**Disposition:** redirect to `Wild::Telemetry::Collector`; preserve legacy
+[#14](https://github.com/jeremylongshore/wild-session-telemetry/issues/14) and
+CLI intent centrally; archive only after the canonical telemetry contract
 passes end to end.
 
 ### 6.5 `wild-transcript-pipeline` — 50/100 legacy, 80/100 migrated
@@ -593,18 +608,21 @@ metadata redaction materially fixes the legacy raw tool input/output exposure
 JSONL is still silently discarded and Markdown output remains injection-prone
 in permissive renderers.
 
-**Disposition:** redirect to `Wild::Telemetry::Pipeline`; map legacy issue #2
-to the central cross-namespace integration work.
+**Disposition:** redirect to `Wild::Telemetry::Pipeline`; map legacy issue
+[#2](https://github.com/jeremylongshore/wild-transcript-pipeline/issues/2) to
+the central cross-namespace integration work.
 
 ### 6.6 `wild-gap-miner` — 45/100
 
-Verification: 276 examples, 0 failures; RuboCop 61 files, 0 offenses. Structural
-migration into `Wild::Telemetry::Analysis` is complete, but the real producer
-contract is broken in two ways described by F-02. The parser also loads the
-entire export into memory (`wild/lib/wild/telemetry/analysis/ingestion/export_parser.rb:17-23`).
+Verification: 276 examples, 0 failures; RuboCop 61 files, 0 offenses. The
+namespace and its tests are present in `Wild::Telemetry::Analysis`, but the
+producer contract is broken in two ways described by F-02. The parser also
+loads the entire export into memory
+(`wild/lib/wild/telemetry/analysis/ingestion/export_parser.rb:17-23`).
 
-**Disposition:** redirect to `Wild::Telemetry::Analysis`; transfer legacy #2
-to the central P0; archive after the round-trip gate.
+**Disposition:** redirect to `Wild::Telemetry::Analysis`; transfer legacy
+[#2](https://github.com/jeremylongshore/wild-gap-miner/issues/2) to the central
+P0; archive after the round-trip gate.
 
 ### 6.7 `wild-hook-ops` — 68/100
 
@@ -624,8 +642,9 @@ depth-limited DFS falsely reported cycles; central tri-color traversal fixed it
 (`wild/lib/wild/analyzers/permission/analyzers/prerequisite_analyzer.rb:39-122`).
 The remaining problem is silent omission of malformed capability/grant rows.
 
-**Disposition:** close legacy issue #3 with the central fix evidence, map row
-validation centrally, redirect and archive.
+**Disposition:** close legacy issue
+[#3](https://github.com/jeremylongshore/wild-permission-analyzer/issues/3) with
+the central fix evidence, map row validation centrally, redirect and archive.
 
 ### 6.9 `wild-test-flake-forensics` — 61/100
 
@@ -639,10 +658,11 @@ and data-quality reporting centrally before using results for CI policy.
 
 ### 6.10 `wild-skillops-registry` — 43/100
 
-Verification: 251 examples, 0 failures; RuboCop 52 files, 0 offenses. Structural
-migration is complete, and disabling the namespace by default is correct. Core
-lifecycle, version, export, and transaction semantics remain internally
-inconsistent. Version validation is also unanchored and accepts trailing junk
+Verification: 251 examples, 0 failures; RuboCop 52 files, 0 offenses. The
+namespace and its tests are present centrally, and disabling the namespace by
+default is appropriate while the audit findings remain open. Core lifecycle,
+version, export, and transaction semantics remain internally inconsistent.
+Version validation is also unanchored and accepts trailing junk
 (`wild/lib/wild/skillops/models/skill.rb:74-78`).
 
 **Disposition:** keep disabled, repair centrally, redirect and archive. Do not
@@ -680,9 +700,12 @@ and preserve the old model under a dated history section.
 - Git hygiene includes 46 local branches, 15 linked worktrees, 23 branches with
   gone upstreams, and one lingering remote feature branch. Review each target
   before safe cleanup; do not bulk-delete.
-- GitHub issues #47, #50, #60, and #66 appear implemented or documented but
-  remain open. Six namespace-move Beads remain `in_progress` after completed
-  merges. Reconcile status with evidence.
+- GitHub issues [#47](https://github.com/jeremylongshore/wild/issues/47),
+  [#50](https://github.com/jeremylongshore/wild/issues/50),
+  [#60](https://github.com/jeremylongshore/wild/issues/60), and
+  [#66](https://github.com/jeremylongshore/wild/issues/66) appear implemented
+  or documented but remain open. Six namespace-move Beads remain `in_progress`
+  after completed merges. Reconcile status with evidence.
 
 ### 7.2 Legacy repositories
 
@@ -923,7 +946,117 @@ test-flake-forensics [#3](https://github.com/jeremylongshore/wild-test-flake-for
 and skillops-registry
 [#4](https://github.com/jeremylongshore/wild-skillops-registry/issues/4).
 
-## 14. Evidence limits and open decisions
+## 14. Release-blocker reproduction receipts
+
+The following read-only commands were rerun from the consolidated `wild`
+repository root at audited commit `e47ee2c`. They are included with exact output
+so the P0/P1 claims can be independently reproduced rather than inferred from
+the audit narrative.
+
+### 14.1 F-01 — fresh Rails host boot
+
+```bash
+bundle exec ruby -Ilib -e 'require "wild"; class FreshHost < Rails::Application; config.eager_load=false; config.secret_key_base="x"*64; end; begin; FreshHost.initialize!; puts "BOOT_OK"; rescue=>e; warn "#{e.class}: #{e.message}"; exit 42; end'
+```
+
+Exact output and exit code:
+
+```text
+Wild::ConfigurationError: Wild.config.admin_tools.job_adapter is :default but no backend gem is loaded to resolve it. Set Wild.config.admin_tools.job_adapter explicitly in an initializer, or add the backend gem this default expects (Sidekiq for job_adapter, Flipper for flag_adapter) to your Gemfile.
+exit=42
+```
+
+### 14.2 F-02a — Collector header omits required `source_id`
+
+```bash
+bundle exec ruby -Ilib - <<'RUBY'
+require "wild"
+
+builder = Wild::Telemetry::Collector::Export::RecordBuilder.new
+header = builder.header(
+  schema_version: "1.0",
+  exported_at: "2026-09-14T00:00:00Z",
+  time_range: {},
+  record_counts: {}
+)
+
+puts "HEADER=#{JSON.generate(header)}"
+begin
+  Wild::Telemetry::Analysis::Ingestion::ExportParser.new.parse_string(JSON.generate(header))
+rescue => error
+  puts "ERROR=#{error.class}: #{error.message}"
+end
+RUBY
+```
+
+Exact output:
+
+```text
+HEADER={"export_type":"session_telemetry","schema_version":"1.0","exported_at":"2026-09-14T00:00:00Z","time_range":{},"record_counts":{}}
+ERROR=Wild::Telemetry::Analysis::SchemaError: export header missing required fields (export_type, schema_version, source_id)
+```
+
+### 14.3 F-02b — nested outcomes fail in Analysis
+
+This probe adds `source_id` only to pass F-02a and reach the second contract
+failure.
+
+```bash
+bundle exec ruby -Ilib - <<'RUBY'
+require "wild"
+
+Event = Struct.new(:action, :outcome)
+events = [Event.new("deploy", "denied"), Event.new("deploy", "success")]
+
+engine = Wild::Telemetry::Collector::Aggregation::Engine.new(min_population: 1)
+builder = Wild::Telemetry::Collector::Export::RecordBuilder.new
+header = builder.header(
+  schema_version: "1.0",
+  exported_at: "2026-09-14T00:00:00Z",
+  time_range: {},
+  record_counts: { outcome_distribution: 1 }
+).merge(source_id: "collector-1")
+record = builder.outcome_distribution_record(engine.outcome_distributions(events).first)
+jsonl = [header, record].map { |value| JSON.generate(value) }.join("\n")
+
+puts "JSONL=#{jsonl.inspect}"
+parsed = Wild::Telemetry::Analysis::Ingestion::ExportParser.new.parse_string(jsonl)
+distribution = parsed[:records][:outcome_distribution].first
+puts "DENIED_VALUE=#{distribution.percentage_for("denied").inspect}"
+begin
+  Wild::Telemetry::Analysis::Analyzers::DenialAnalyzer.new.analyze(parsed[:records])
+rescue => error
+  puts "ERROR=#{error.class}: #{error.message}"
+end
+RUBY
+```
+
+Exact output:
+
+```text
+JSONL="{\"export_type\":\"session_telemetry\",\"schema_version\":\"1.0\",\"exported_at\":\"2026-09-14T00:00:00Z\",\"time_range\":{},\"record_counts\":{\"outcome_distribution\":1},\"source_id\":\"collector-1\"}\n{\"record_type\":\"outcome_distribution\",\"action\":\"deploy\",\"total_count\":2,\"outcomes\":{\"denied\":{\"count\":1,\"percentage\":0.5},\"success\":{\"count\":1,\"percentage\":0.5}}}"
+DENIED_VALUE={"count"=>1, "percentage"=>0.5}
+ERROR=TypeError: no implicit conversion of Float into Hash
+```
+
+### 14.4 F-03 — mutation precedes failed audit append
+
+```bash
+bundle exec ruby -Ilib -e 'require "wild"; store=Object.new; def store.append(*) = raise(IOError, "disk full"); recorder=Wild::AdminTools::Audit::Recorder.new(store: store); mutations=0; begin; recorder.record(action_name: "toggle_flag", params: {}, caller_id: "admin") { mutations += 1; Wild::AdminTools::Result.new(status: :success, action: "toggle_flag", operation: "enable") }; rescue => e; puts "reported=#{e.class}:#{e.message} mutations=#{mutations}"; end'
+```
+
+Exact output and exit code:
+
+```text
+reported=IOError:disk full mutations=1
+exit=0
+```
+
+The probe intentionally catches and reports the error. `mutations=1` is the
+material result: the protected operation completed before durable evidence
+failed.
+
+## 15. Evidence limits and open decisions
 
 This review did not change runtime code, publish packages, merge Dependabot
 updates, close old issues, archive repositories, or delete branches/worktrees.
@@ -946,19 +1079,20 @@ Owner decisions still required during remediation:
 - Whether Rails versions newer than the tested matrix are supported or merely
   allowed to attempt installation. Avoid an unbounded compatibility promise.
 
-## 15. Final conclusion
+## 16. Final conclusion
 
-The August review wave materially improved Wild. The central code is much
-closer to a high-quality library than the stale umbrella suggests, and its
-green test/security baseline is real. The remaining risk is concentrated at
-the boundaries between namespaces, between the gem and a fresh host, between a
-mutation and its durable evidence, and between source and release artifact.
+The August review wave repaired multiple documented defects. The central code
+is closer to a releasable library than the stale umbrella suggests, and this
+audit reproduced the recorded green test and security gates. The remaining
+risk is concentrated at the boundaries between namespaces, between the gem and
+a fresh host, between a mutation and its durable evidence, and between source
+and release artifact.
 
 That concentration is good news: the project does not need another broad
-rewrite. It needs a strict release moratorium, eleven bounded remediation
-outcomes, and a truthful cutover. Complete those in priority order and Wild can
-move from a strong collection of internal libraries to an installable,
-auditable Rails product without discarding the engineering already done.
+rewrite. It needs a release hold, eleven bounded remediation outcomes, and a
+truthful cutover. Resolve those outcomes in priority order and Wild can move
+from an internally tested collection of libraries to an installable, auditable
+Rails product without discarding the engineering already done.
 
 ---
 
