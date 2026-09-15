@@ -1,72 +1,99 @@
 # Architecture — wild-rails-ai-ops
 
-This document describes how the 10 `wild-*` gems fit together at runtime, the dependency graph between them, and the boundaries each one is responsible for.
+This document describes the current Wild topology. The active implementation
+is one Rails engine in [`jeremylongshore/wild`](https://github.com/jeremylongshore/wild).
+This umbrella contains documentation and governance, not runtime Ruby code.
 
-For per-gem deep dives (entry points, file:line citations, failure modes, operator playbooks) see each repo's `000-docs/NNN-AT-AUDT-appaudit-2026-05-28.md`.
+## System boundary
 
-## Runtime layers
-
-The ecosystem has four operational layers. Each gem belongs to exactly one.
-
-### Layer 1 — Product-facing runtime (Archetype A)
-
-What an AI agent actually talks to during a live session.
-
-- **wild-rails-safe-introspection-mcp** — MCP server exposing 3 read-only Rails introspection tools (model reflection, schema inspection, bounded record read). Policy-enforced, audited, bounded. No writes, no console access, no admin.
-- **wild-admin-tools-mcp** — MCP server exposing administrative actions (the inverse of the introspection gem — this is the write path). Every tool call is gated by `wild-capability-gate`.
-
-### Layer 2 — Coordination & registry (Archetype D)
-
-Cross-gem coordination primitives consumed by Layer 1 gems.
-
-- **wild-capability-gate** — The decision point for "is this agent allowed to invoke this tool right now?" Consumed in-process by `wild-admin-tools-mcp`. Emits audit decisions to a configured sink.
-- **wild-skillops-registry** — Skill advertisement and lookup across agents. v0.1.0 — currently standalone. Consumer adoption (likely by `wild-capability-gate` and the *-mcp gems) is planned for v2.
-
-### Layer 3 — Telemetry & analytics (Archetype B)
-
-Out-of-band data collection, processing, and analysis. Runs alongside Layer 1, not in the request path.
-
-- **wild-session-telemetry** — Collects session events (calls, decisions, outcomes) with privacy-aware redaction. Emits to a configured sink.
-- **wild-transcript-pipeline** — Ingests, normalizes, and processes raw transcripts (likely from telemetry export).
-- **wild-gap-miner** — Consumes from `wild-session-telemetry` and `wild-transcript-pipeline` outputs. Classifies gaps: actions an agent could have taken but didn't, attempts that failed, holes in the capability model.
-
-### Layer 4 — SDLC companion (Archetype C)
-
-Engineer-facing, not runtime. Run during development, CI, or pre-deploy.
-
-- **wild-permission-analyzer** — Static analysis of a host Rails app's permission model. Run before agents are deployed.
-- **wild-test-flake-forensics** — Detects and triages flaky tests. Integrates with CI.
-- **wild-hook-ops** — Generalizes hook lifecycle patterns that today live as ad-hoc code in `wild-admin-tools-mcp` and `wild-rails-safe-introspection-mcp`. Extracted in v1; consumer adoption planned for v2.
-
-## Cross-layer dependencies
-
-The only hard runtime dependency between Layer 1 gems and Layer 2 is `wild-admin-tools-mcp → wild-capability-gate` (declared in admin-tools' Gemfile). All other inter-gem relationships are data-flow (Layer 3) or planned-for-v2 (hook-ops, skillops-registry adoption).
-
-```
-admin-tools-mcp ────► capability-gate     (hard runtime dep, v1)
-session-telemetry ──► transcript-pipeline ──► gap-miner   (data flow, v1)
-*-mcp gems ──[v2]──► hook-ops              (planned)
-*-mcp + capability-gate ──[v2]──► skillops-registry  (planned)
+```text
+Rails host
+  |
+  `-- Wild::Engine
+       |-- Wild::Introspection
+       |-- Wild::AdminTools ---- Wild::CapabilityGate
+       |-- Wild::Telemetry::Collector
+       |     `-- Wild::Telemetry::Pipeline
+       |           `-- Wild::Telemetry::Analysis
+       |-- Wild::Hooks
+       |-- Wild::Analyzers::Permission
+       |-- Wild::Analyzers::TestFlakes
+       `-- Wild::Skillops (internal, opt-in)
 ```
 
-## Known v1 → v2 adoption gaps
+The diagram is a namespace and responsibility map. It is not a claim that every
+cross-namespace journey is release-ready. In particular, the 2026-09-14 audit
+reproduced an incompatible Collector-to-Analysis export contract and a fresh
+Rails-host boot failure. Both are release blockers tracked in the active
+implementation repository.
 
-These are documented in the 2026-05-28 truth audit and tracked per-repo:
+## Runtime responsibilities
 
-1. **hook-ops not yet consumed** — `wild-admin-tools-mcp` and `wild-rails-safe-introspection-mcp` still use their own ad-hoc HookEmitter classes. Migration to `wild-hook-ops` is the v2 target. See each consumer's `000-docs/NNN-AT-AUDT-appaudit-2026-05-28.md`.
-2. **skillops-registry standalone** — No other gem currently registers with it. v2 consumer adoption is the open question; see `wild-skillops-registry/000-docs/007-AT-AUDT-appaudit-2026-05-28.md`.
-3. **Data contract symmetry** — Telemetry → transcript-pipeline → gap-miner contracts are documented on the consumer side; producer-side documentation completeness is being verified in the truth-audit cycle.
+### Governed operations
 
-## Operating principles
+- `Wild::Introspection` owns bounded, read-oriented Rails inspection.
+- `Wild::AdminTools` owns privileged administrative operations.
+- `Wild::CapabilityGate` owns capability-policy evaluation used by governed
+  operations.
 
-These apply to every gem in the ecosystem:
+### Telemetry
 
-- **Safety-first defaults** — Every privileged action is gated; every gate decision is audited.
-- **Read-only-by-default** — Write paths are explicitly opt-in and require capability-gate approval.
-- **Privacy-aware** — Telemetry redacts PII by default; opt-in for richer collection.
-- **Auditable** — Decisions and actions are recorded with enough context to reconstruct what happened.
-- **Composable** — Each gem has a single responsibility and a stable public surface.
+- `Wild::Telemetry::Collector` receives and aggregates privacy-filtered events.
+- `Wild::Telemetry::Pipeline` normalizes and dispatches transcript data.
+- `Wild::Telemetry::Analysis` analyzes exported telemetry for operational and
+  capability gaps.
 
-## License
+The intended Collector-to-Analysis round trip is not currently compatible and
+must not be represented as shipped until the central integration gate passes.
 
-All gems and this umbrella repo are Intent Solutions Proprietary.
+### Extension and analysis
+
+- `Wild::Hooks` owns hook registration and execution.
+- `Wild::Analyzers::Permission` inspects permission models.
+- `Wild::Analyzers::TestFlakes` analyzes test-run evidence.
+- `Wild::Skillops` is internal and remains outside the supported adoption path
+  until its lifecycle and history work is complete. Its
+  [`Wild::Configuration::Skillops` initializer](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/lib/wild/configuration.rb#L345-L368)
+  defaults `enabled` to `false`, and its
+  [policy spec](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/spec/wild/skillops_enabled_policy_spec.rb)
+  verifies explicit opt-in.
+
+## Repository ownership
+
+| Surface | Repository | Change policy |
+|---|---|---|
+| Runtime engine and all ten namespaces | [`jeremylongshore/wild`](https://github.com/jeremylongshore/wild) | Active implementation; fixes land here |
+| Ecosystem documentation, governance, audits, migration | [`intent-solutions-io/wild-rails-ai-ops`](https://github.com/intent-solutions-io/wild-rails-ai-ops) | Current umbrella; no runtime Ruby code |
+| Ten original `jeremylongshore/wild-*` repositories | Linked from the [README namespace map](README.md#active-implementation) | Frozen; redirect and archive at cutover |
+
+## Topology decision and migration
+
+The project began as ten separately developed gems. The accepted
+[2026-05-29 topology decision](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/000-docs/adr/ADR-0001-topology.md)
+superseded that model with one Rails engine containing ten namespaces. The
+implementation was consolidated into `jeremylongshore/wild`; the original
+repositories remain readable for history but are not development targets.
+
+Cutover is deliberately incomplete. The original repositories will be
+redirected and archived only after the consolidated engine clears its release
+gates. [Umbrella issue #2](https://github.com/intent-solutions-io/wild-rails-ai-ops/issues/2)
+owns that transition.
+
+## Evidence and current status
+
+- The active implementation README and its `000-docs/` directory own current
+  code and release status.
+- This umbrella owns cross-repository audits and migration records.
+- Beads and linked GitHub issues own planned remediation state.
+- Dated audits remain historical evidence and are not silently rewritten when
+  the implementation changes.
+
+See the [2026-09-14 ecosystem deep review](000-docs/001-AA-AUDT-wild-ecosystem-deep-code-review-2026-09-14.md)
+for the latest cross-repository baseline recorded here.
+
+## License boundary
+
+This umbrella is Intent Solutions Proprietary. The consolidated
+`jeremylongshore/wild` engine has a separate
+[MIT License](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE).
+Historical repositories retain their individual license files.

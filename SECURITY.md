@@ -2,19 +2,36 @@
 
 ## Reporting a vulnerability
 
-If you discover a security issue in any `wild-*` gem or in this umbrella repo, do not file a public GitHub issue.
+Do not file a public GitHub issue for a suspected security vulnerability.
 
 Email: jeremy@intentsolutions.io
 
 Include:
-- Affected repo(s) and version(s)
+
+- The affected repository, namespace, commit, or version
 - A description of the issue and its impact
 - Reproduction steps, if available
+- Whether the issue may also exist in an original `wild-*` repository
 
 ## Supported versions
 
-The latest release of each `wild-*` gem on its `main` branch is the supported version. Older versions are not patched.
+Wild is currently pre-release and has no tagged supported release. Security
+fixes for the active implementation are made on the `main` branch of
+[`jeremylongshore/wild`](https://github.com/jeremylongshore/wild).
+
+The ten original `jeremylongshore/wild-*` repositories are frozen migration
+sources and are not supported for new deployments. Reports against them are
+still useful when the same behavior may have migrated into the consolidated
+engine.
 
 ## Scope
 
-This security policy applies to all 10 `wild-*` gems and to the `wild-rails-ai-ops` umbrella repo. See the [README](./README.md) for the full list.
+This policy covers:
+
+- The consolidated `jeremylongshore/wild` Rails engine and its ten namespaces
+- This `intent-solutions-io/wild-rails-ai-ops` documentation and governance
+  umbrella
+- Migration-relevant vulnerabilities discovered in the ten frozen source
+  repositories
+
+See the [README](README.md) for the current repository and namespace map.
