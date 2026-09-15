@@ -29,7 +29,7 @@ intent-solutions-io/wild-rails-ai-ops       umbrella: docs, governance, audits
 
 | Repository | Role | Release posture |
 |---|---|---|
-| [`jeremylongshore/wild`](https://github.com/jeremylongshore/wild) | The only active runtime implementation and the only Wild repository accepting code changes | Version `0.0.1`, pre-release, no tags; release gates remain open |
+| [`jeremylongshore/wild`](https://github.com/jeremylongshore/wild) | The only active runtime implementation and the only Wild repository accepting code changes | Pre-release, no tags; release gates remain open |
 
 The engine contains these namespaces:
 
