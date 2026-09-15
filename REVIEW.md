@@ -39,10 +39,12 @@ ownership, and migration. Review those claims for evidence and consistency.
 6. **Historical-record rewriting.** Dated audits and decisions describe the
    evidence available at a pinned point in time. Correct current-facing
    documents and add later records; do not silently rewrite old evidence.
-7. **Governance contradiction.** This umbrella is proprietary, the active
-   engine is MIT-licensed, external contributions are closed, and security
-   disclosure goes to private email. Flag language that collapses those
-   boundaries or invites public vulnerability reports.
+7. **Governance contradiction.** This umbrella is proprietary; the active
+   engine has a separately maintained
+   [MIT License](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE);
+   external contributions are closed; and security disclosure goes to private
+   email. Flag language that collapses those boundaries or invites public
+   vulnerability reports.
 8. **Sensitive-data leakage.** Flag customer names, internal hostnames,
    tailnet addresses, private filesystem paths, credentials, or real telemetry.
    Never reproduce a suspected secret in a review comment.
@@ -66,7 +68,9 @@ ownership, and migration. Review those claims for evidence and consistency.
 - **INV-7 — Maturity is explicit:** no release exists until the active
   repository publishes one and all required adoption gates pass.
 - **INV-8 — License boundaries stay explicit:** umbrella proprietary, active
-  engine MIT, historical repositories governed by their own license files.
+  engine licensed under its separate
+  [MIT License](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE),
+  historical repositories governed by their own license files.
 
 ## Sources reviewers may use
 
@@ -74,6 +78,10 @@ ownership, and migration. Review those claims for evidence and consistency.
 - Dated cross-repository evidence: `000-docs/000-INDEX.md`
 - Work state: Beads and linked GitHub issues
 - Runtime behavior and release state: `jeremylongshore/wild`
+- Accepted topology decision:
+  [`ADR-0001`](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/000-docs/adr/ADR-0001-topology.md)
+- Active-engine license:
+  [`LICENSE`](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE)
 
 If a pull request makes a current runtime claim but provides only umbrella
 prose, ask for the smallest source, test, run receipt, or release artifact that

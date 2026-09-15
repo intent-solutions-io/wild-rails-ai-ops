@@ -44,7 +44,7 @@ The engine contains these namespaces:
 | `Wild::Hooks` | Hook registration and execution | [`wild-hook-ops`](https://github.com/jeremylongshore/wild-hook-ops) |
 | `Wild::Analyzers::Permission` | Permission-model analysis | [`wild-permission-analyzer`](https://github.com/jeremylongshore/wild-permission-analyzer) |
 | `Wild::Analyzers::TestFlakes` | Test-flake forensics | [`wild-test-flake-forensics`](https://github.com/jeremylongshore/wild-test-flake-forensics) |
-| `Wild::Skillops` | Internal skill registry, disabled by default | [`wild-skillops-registry`](https://github.com/jeremylongshore/wild-skillops-registry) |
+| `Wild::Skillops` | Internal skill registry; opt-in, with `enabled` defaulting to `false` in [engine configuration](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/lib/wild/configuration.rb#L345-L368) | [`wild-skillops-registry`](https://github.com/jeremylongshore/wild-skillops-registry) |
 
 ## Migration status
 
@@ -83,7 +83,8 @@ current implementation status.
 
 This umbrella repository is Intent Solutions Proprietary; see [LICENSE](LICENSE).
 The active `jeremylongshore/wild` implementation is separately licensed under
-the MIT License. Each historical repository retains its own license file.
+the [MIT License](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE).
+Each historical repository retains its own license file.
 
 ## Contributing
 

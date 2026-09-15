@@ -18,7 +18,7 @@ Rails host
        |-- Wild::Hooks
        |-- Wild::Analyzers::Permission
        |-- Wild::Analyzers::TestFlakes
-       `-- Wild::Skillops (disabled by default)
+       `-- Wild::Skillops (internal, opt-in)
 ```
 
 The diagram is a namespace and responsibility map. It is not a claim that every
@@ -51,8 +51,12 @@ must not be represented as shipped until the central integration gate passes.
 - `Wild::Hooks` owns hook registration and execution.
 - `Wild::Analyzers::Permission` inspects permission models.
 - `Wild::Analyzers::TestFlakes` analyzes test-run evidence.
-- `Wild::Skillops` is internal, disabled by default, and remains outside the
-  supported adoption path until its lifecycle and history work is complete.
+- `Wild::Skillops` is internal and remains outside the supported adoption path
+  until its lifecycle and history work is complete. Its
+  [`Wild::Configuration::Skillops` initializer](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/lib/wild/configuration.rb#L345-L368)
+  defaults `enabled` to `false`, and its
+  [policy spec](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/spec/wild/skillops_enabled_policy_spec.rb)
+  verifies explicit opt-in.
 
 ## Repository ownership
 
@@ -64,11 +68,11 @@ must not be represented as shipped until the central integration gate passes.
 
 ## Topology decision and migration
 
-The project began as ten separately developed gems. A 2026-05-29 architecture
-council rejected that operating model and selected one Rails engine containing
-ten namespaces. The implementation was consolidated into `jeremylongshore/wild`;
-the original repositories remain readable for history but are not development
-targets.
+The project began as ten separately developed gems. The accepted
+[2026-05-29 topology decision](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/000-docs/adr/ADR-0001-topology.md)
+superseded that model with one Rails engine containing ten namespaces. The
+implementation was consolidated into `jeremylongshore/wild`; the original
+repositories remain readable for history but are not development targets.
 
 Cutover is deliberately incomplete. The original repositories will be
 redirected and archived only after the consolidated engine clears its release
@@ -90,5 +94,6 @@ for the latest cross-repository baseline recorded here.
 ## License boundary
 
 This umbrella is Intent Solutions Proprietary. The consolidated
-`jeremylongshore/wild` engine is MIT-licensed. Historical repositories retain
-their individual license files.
+`jeremylongshore/wild` engine has a separate
+[MIT License](https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE).
+Historical repositories retain their individual license files.

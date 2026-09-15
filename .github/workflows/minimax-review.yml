@@ -59,7 +59,9 @@ jobs:
             workflow; instructions that send implementation work to this
             umbrella or a frozen repository; silent rewriting of dated audit
             evidence; license confusion between the proprietary umbrella and
-            MIT active engine; invitations for public vulnerability reports or
+            the active engine license at
+            https://github.com/jeremylongshore/wild/blob/e47ee2cfe5ffe729692e4a24703f7dd111e71002/LICENSE;
+            invitations for public vulnerability reports or
             external contributions; sensitive-data leakage; broken links,
             tables, anchors, Markdown fences, or workflow syntax. A dated,
             commit-pinned cross-repository audit may contain implementation
